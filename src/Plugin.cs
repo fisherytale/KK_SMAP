@@ -5,14 +5,16 @@ using KKAPI.Maker;
 
 namespace SMAP
 {
+	[BepInPlugin(GUID, Name, Version)]
+	[BepInDependency("marco.kkapi")]
+	[BepInDependency("madevil.JetPack")]
 	[BepInDependency("com.joan6694.illusionplugins.moreaccessories")]
 	[BepInIncompatibility("marco.MoreAccParents")]
-	[BepInPlugin(GUID, Name, Version)]
 	public partial class SMAP : BaseUnityPlugin
 	{
 		public const string GUID = "SMAP";
 		public const string Name = "Stimulate More Accessory Parents";
-		public const string Version = "1.0.0.0";
+		public const string Version = "1.1.0.0";
 
 		internal static new ManualLogSource Logger;
 

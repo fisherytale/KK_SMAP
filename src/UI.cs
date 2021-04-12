@@ -27,7 +27,9 @@ namespace SMAP
 		{
 			private ChaControl _chaCtrl = null;
 			private int _windowRectID;
-			private Rect _windowRect = new Rect(525, 636, 330, 250);
+			private Vector2 _windowSize = new Vector2(330f, 250f);
+			private Rect _windowRect;
+			private Texture2D _windowBGtex = null;
 			private const int singleItemWidth = 23;
 
 			private static List<string> _boneSuggestions = new List<string>();
@@ -57,6 +59,7 @@ namespace SMAP
 			{
 				DontDestroyOnLoad(this);
 				//enabled = false;
+				_windowRect = new Rect(525, 636, _windowSize.x, _windowSize.y);
 
 				GameObject _base = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/AcsParentWindow");
 				Toggle _origin = Traverse.Create(_base.GetComponent<CustomAcsParentWindow>()).Field("tglParent").GetValue<Toggle[]>()[0];
@@ -69,6 +72,7 @@ namespace SMAP
 				_copy.GetComponentInChildren<TextMeshProUGUI>().text = "S.M.A.P";
 				_tglSMAP = _copy.GetComponent<Toggle>();
 				_tglSMAP.onValueChanged.RemoveAllListeners();
+				_windowBGtex = MakeTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.5f, 0.5f, 0.5f, 1f));
 
 				_chaCtrl = CustomBase.Instance.chaCtrl;
 				_windowRectID = GUIUtility.GetControlID(FocusType.Passive);
@@ -130,15 +134,26 @@ namespace SMAP
 					if (!_searchFieldValue.IsNullOrEmpty())
 						_boneSuggestions = _boneSuggestions.Where(x => x.Contains(_searchFieldValue)).ToList();
 				}
+				/*
+				GUIStyle _windowSolid = new GUIStyle(GUI.skin.window);
+				//_windowSolid.normal.background = _windowBGtex;
+				_windowSolid.onNormal.background = _windowBGtex;
+				_windowSolid.normal.textColor = Color.grey;
+				_windowSolid.onNormal.textColor = Color.cyan;
 
-				GUILayout.Window(_windowRectID, new Rect(525, 636, 330, 250), DrawWindowContents, "S.M.A.P");
+				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, $"S.M.A.P - Slot{_curSlot + 1:00}", _windowSolid);
+				*/
+				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, "");
 
 				if (_windowRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
 					Input.ResetInputAxes();
 			}
 
-			private void DrawWindowContents(int id)
+			private void DrawWindowContents(int _windowID)
 			{
+				GUI.Box(new Rect(0, 0, _windowSize.x, _windowSize.y), _windowBGtex);
+				GUI.Box(new Rect(0, 0, _windowSize.x, 23), $"S.M.A.P - Slot{_curSlot + 1:00}", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
+
 				GUIStyle _buttonActive = new GUIStyle(GUI.skin.button);
 				_buttonActive.normal.textColor = Color.cyan;
 				_buttonActive.hover.textColor = Color.cyan;
@@ -209,7 +224,7 @@ namespace SMAP
 								}
 
 								if (_filtered.Count > (shownItemCount - 1))
-                                {
+								{
 									int rightItemCount = Mathf.Max(0, _boneSuggestions.Count - (leftItemCount + shownItemCount));
 									GUILayout.Space(rightItemCount * singleItemWidth);
 								}
@@ -240,6 +255,20 @@ namespace SMAP
 				GUILayout.EndHorizontal();
 
 				GUI.DragWindow();
+			}
+
+			private Texture2D MakeTex(int _width, int _height, Color _color)
+			{
+				Color[] pix = new Color[_width * _height];
+
+				for (int i = 0; i < pix.Length; i++)
+					pix[i] = _color;
+
+				Texture2D result = new Texture2D(_width, _height);
+				result.SetPixels(pix);
+				result.Apply();
+
+				return result;
 			}
 		}
 	}
