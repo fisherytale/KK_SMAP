@@ -157,9 +157,10 @@ namespace SMAP
 				_windowSolid.normal.background = _onNormalBG;
 
 				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, "", _windowSolid);
-
+				/*
 				if (_windowRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
 					Input.ResetInputAxes();
+				*/
 			}
 
 			internal void ChangeRes()
