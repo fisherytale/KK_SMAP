@@ -14,7 +14,7 @@ namespace SMAP
 	{
 		public const string GUID = "SMAP";
 		public const string Name = "Stimulate More Accessory Parents";
-		public const string Version = "1.1.0.0";
+		public const string Version = "1.2.0.0";
 
 		internal static new ManualLogSource Logger;
 

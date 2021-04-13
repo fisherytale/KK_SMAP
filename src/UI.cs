@@ -27,7 +27,11 @@ namespace SMAP
 		{
 			private ChaControl _chaCtrl = null;
 			private int _windowRectID;
-			private Vector2 _windowSize = new Vector2(330f, 250f);
+			private Vector2 _windowSize = new Vector2(330, 250);
+			private Vector2 _windowPos = new Vector2(525, 636);
+			private Vector2 _resScaleFactor = Vector2.one;
+			private Vector2 _ScreenRes = Vector2.zero;
+			private Matrix4x4 _resScaleMatrix;
 			private Rect _windowRect;
 			private Texture2D _windowBGtex = null;
 			private const int singleItemWidth = 23;
@@ -59,7 +63,8 @@ namespace SMAP
 			{
 				DontDestroyOnLoad(this);
 				//enabled = false;
-				_windowRect = new Rect(525, 636, _windowSize.x, _windowSize.y);
+				ChangeRes();
+				_windowRect = new Rect(_windowPos.x, _windowPos.y, _windowSize.x, _windowSize.y);
 
 				GameObject _base = GameObject.Find("CustomScene/CustomRoot/FrontUIGroup/CustomUIGroup/CvsMenuTree/04_AccessoryTop/AcsParentWindow");
 				Toggle _origin = Traverse.Create(_base.GetComponent<CustomAcsParentWindow>()).Field("tglParent").GetValue<Toggle[]>()[0];
@@ -127,6 +132,10 @@ namespace SMAP
 				//if (_chaCtrl == null) return;
 				if (!_display()) return;
 
+				if (_ScreenRes.x != Screen.width || _ScreenRes.y != Screen.height)
+					ChangeRes();
+				GUI.matrix = _resScaleMatrix;
+
 				if (_searchFieldValueChanged)
 				{
 					_searchFieldValueChanged = false;
@@ -143,10 +152,23 @@ namespace SMAP
 
 				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, $"S.M.A.P - Slot{_curSlot + 1:00}", _windowSolid);
 				*/
-				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, "");
+				GUIStyle _windowSolid = new GUIStyle(GUI.skin.window);
+				Texture2D _onNormalBG = _windowSolid.onNormal.background;
+				_windowSolid.normal.background = _onNormalBG;
+
+				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, "", _windowSolid);
 
 				if (_windowRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
 					Input.ResetInputAxes();
+			}
+
+			internal void ChangeRes()
+			{
+				_ScreenRes.x = Screen.width;
+				_ScreenRes.y = Screen.height;
+				_resScaleFactor.x = _ScreenRes.x / 1600;
+				_resScaleFactor.y = _ScreenRes.y / 900;
+				_resScaleMatrix = Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, new Vector3(_resScaleFactor.x, _resScaleFactor.y, 1));
 			}
 
 			private void DrawWindowContents(int _windowID)
