@@ -33,6 +33,7 @@ namespace SMAP
 			private Vector2 _ScreenRes = Vector2.zero;
 			private Matrix4x4 _resScaleMatrix;
 			private Rect _windowRect;
+			private bool _hasFocus = false;
 			private Texture2D _windowBGtex = null;
 			private const int singleItemWidth = 23;
 
@@ -143,24 +144,19 @@ namespace SMAP
 					if (!_searchFieldValue.IsNullOrEmpty())
 						_boneSuggestions = _boneSuggestions.Where(x => x.Contains(_searchFieldValue)).ToList();
 				}
-				/*
-				GUIStyle _windowSolid = new GUIStyle(GUI.skin.window);
-				//_windowSolid.normal.background = _windowBGtex;
-				_windowSolid.onNormal.background = _windowBGtex;
-				_windowSolid.normal.textColor = Color.grey;
-				_windowSolid.onNormal.textColor = Color.cyan;
 
-				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, $"S.M.A.P - Slot{_curSlot + 1:00}", _windowSolid);
-				*/
 				GUIStyle _windowSolid = new GUIStyle(GUI.skin.window);
 				Texture2D _onNormalBG = _windowSolid.onNormal.background;
 				_windowSolid.normal.background = _onNormalBG;
 
 				GUILayout.Window(_windowRectID, _windowRect, DrawWindowContents, "", _windowSolid);
-				/*
-				if (_windowRect.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
+
+				Event _windowEvent = Event.current;
+				if (EventType.MouseDown == _windowEvent.type || EventType.MouseUp == _windowEvent.type || EventType.MouseDrag == _windowEvent.type || EventType.MouseMove == _windowEvent.type)
+					_hasFocus = false;
+
+				if (_hasFocus && GetResizedRect(_windowRect).Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
 					Input.ResetInputAxes();
-				*/
 			}
 
 			internal void ChangeRes()
@@ -174,6 +170,10 @@ namespace SMAP
 
 			private void DrawWindowContents(int _windowID)
 			{
+				Event _windowEvent = Event.current;
+				if (EventType.MouseDown == _windowEvent.type || EventType.MouseUp == _windowEvent.type || EventType.MouseDrag == _windowEvent.type || EventType.MouseMove == _windowEvent.type)
+					_hasFocus = true;
+
 				GUI.Box(new Rect(0, 0, _windowSize.x, _windowSize.y), _windowBGtex);
 				GUI.Box(new Rect(0, 0, _windowSize.x, 23), $"S.M.A.P - Slot{_curSlot + 1:00}", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
 
@@ -278,6 +278,15 @@ namespace SMAP
 				GUILayout.EndHorizontal();
 
 				GUI.DragWindow();
+			}
+
+			// https://bensilvis.com/unity3d-auto-scale-gui/
+			private Rect GetResizedRect(Rect _rect)
+			{
+				Vector2 _position = GUI.matrix.MultiplyVector(new Vector2(_rect.x, _rect.y));
+				Vector2 _size = GUI.matrix.MultiplyVector(new Vector2(_rect.width, _rect.height));
+
+				return new Rect(_position.x, _position.y, _size.x, _size.y);
 			}
 
 			private Texture2D MakeTex(int _width, int _height, Color _color)
