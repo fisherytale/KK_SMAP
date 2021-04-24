@@ -35,7 +35,7 @@ namespace SMAP
 			private Rect _windowRect;
 			private bool _hasFocus = false;
 			private Texture2D _windowBGtex = null;
-			private const int singleItemWidth = 23;
+			private const int _singleItemHeight = 23;
 
 			private static List<string> _boneSuggestions = new List<string>();
 
@@ -130,11 +130,11 @@ namespace SMAP
 
 			private void OnGUI()
 			{
-				//if (_chaCtrl == null) return;
 				if (!_display()) return;
 
 				if (_ScreenRes.x != Screen.width || _ScreenRes.y != Screen.height)
 					ChangeRes();
+
 				GUI.matrix = _resScaleMatrix;
 
 				if (_searchFieldValueChanged)
@@ -214,17 +214,17 @@ namespace SMAP
 						{
 							GUILayout.BeginVertical();
 							{
-								int leftItemCount = Mathf.FloorToInt(_boneScrollPos.y / singleItemWidth);
-								int shownItemCount = 8;
+								int _leftItemCount = Mathf.FloorToInt(_boneScrollPos.y / _singleItemHeight);
+								int _shownItemCount = 8;
 
 								List<string> _filtered = _boneSuggestions.ToList();
-								if (_filtered.Count > (shownItemCount - 1))
+								if (_filtered.Count > (_shownItemCount - 1))
 								{
-									if (_boneSuggestions.Count - leftItemCount < shownItemCount)
-										leftItemCount = _boneSuggestions.Count - shownItemCount;
+									if (_boneSuggestions.Count - _leftItemCount < _shownItemCount)
+										_leftItemCount = _boneSuggestions.Count - _shownItemCount;
 
-									GUILayout.Space(leftItemCount * singleItemWidth);
-									_filtered = _boneSuggestions.Skip(leftItemCount).Take(shownItemCount).ToList();
+									GUILayout.Space(_leftItemCount * _singleItemHeight);
+									_filtered = _boneSuggestions.Skip(_leftItemCount).Take(_shownItemCount).ToList();
 								}
 
 								foreach (string _name in _filtered)
@@ -246,10 +246,10 @@ namespace SMAP
 									GUILayout.EndHorizontal();
 								}
 
-								if (_filtered.Count > (shownItemCount - 1))
+								if (_filtered.Count > (_shownItemCount - 1))
 								{
-									int rightItemCount = Mathf.Max(0, _boneSuggestions.Count - (leftItemCount + shownItemCount));
-									GUILayout.Space(rightItemCount * singleItemWidth);
+									int _rightItemCount = Mathf.Max(0, _boneSuggestions.Count - (_leftItemCount + _shownItemCount));
+									GUILayout.Space(_rightItemCount * _singleItemHeight);
 								}
 							}
 							GUILayout.EndVertical();
@@ -260,14 +260,14 @@ namespace SMAP
 
 					GUILayout.BeginVertical(GUI.skin.box, GUILayout.ExpandHeight(true));
 					{
-						for (int i = 0; i < _bookmark.Count; i++)
+						foreach (string keyword in _bookmark.ToList())
 						{
 							GUILayout.BeginHorizontal();
-							if (GUILayout.Button(_bookmark[i]))
-								SearchFieldValue = _bookmark[i];
+							if (GUILayout.Button(keyword))
+								SearchFieldValue = keyword;
 							if (GUILayout.Button("X", GUILayout.Width(20)))
 							{
-								_bookmark.Remove(_bookmark[i]);
+								_bookmark.Remove(keyword);
 								SaveBookmark();
 							}
 							GUILayout.EndHorizontal();
@@ -276,8 +276,6 @@ namespace SMAP
 					GUILayout.EndVertical();
 				}
 				GUILayout.EndHorizontal();
-
-				GUI.DragWindow();
 			}
 
 			// https://bensilvis.com/unity3d-auto-scale-gui/
