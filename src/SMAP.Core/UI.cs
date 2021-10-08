@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -78,8 +77,11 @@ namespace SMAP
 				_copy.GetComponentInChildren<TextMeshProUGUI>().text = "S.M.A.P";
 				_tglSMAP = _copy.GetComponent<Toggle>();
 				_tglSMAP.onValueChanged.RemoveAllListeners();
+#if KK
 				_windowBGtex = MakeTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.5f, 0.5f, 0.5f, 1f));
-
+#else
+				_windowBGtex = MakeTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.2f, 0.2f, 0.2f, 1f));
+#endif
 				_chaCtrl = CustomBase.Instance.chaCtrl;
 				_windowRectID = GUIUtility.GetControlID(FocusType.Passive);
 
@@ -108,8 +110,10 @@ namespace SMAP
 			{
 				if (CustomBase.Instance.customCtrl.hideFrontUI)
 					return false;
+#if KK
 				if (!Manager.Scene.Instance.AddSceneName.IsNullOrEmpty() && Manager.Scene.Instance.AddSceneName != "CustomScene")
 					return false;
+#endif
 				if (_cgAccessoryTop != null && _cgAcsParentWindow != null)
 					return (_cgAccessoryTop.alpha > 0 && _cgAcsParentWindow.alpha > 0);
 				return false;
@@ -119,13 +123,17 @@ namespace SMAP
 			{
 				if (_chaCtrl == null)
 					return null;
+#if KK
 				if (_curSlot < 20)
+#endif
 				{
 					if (_chaCtrl.chaFile.coordinate.ElementAtOrDefault(_chaCtrl.fileStatus.coordinateType) == null)
 						return null;
 					return _chaCtrl.chaFile.coordinate[_chaCtrl.fileStatus.coordinateType].accessory.parts.ElementAtOrDefault(_curSlot);
 				}
+#if KK
 				return MoreAccessoriesKOI.MoreAccessories._self._charaMakerData.nowAccessories.ElementAtOrDefault(_curSlot - 20);
+#endif
 			}
 
 			private void OnGUI()
@@ -173,7 +181,9 @@ namespace SMAP
 				Event _windowEvent = Event.current;
 				if (EventType.MouseDown == _windowEvent.type || EventType.MouseUp == _windowEvent.type || EventType.MouseDrag == _windowEvent.type || EventType.MouseMove == _windowEvent.type)
 					_hasFocus = true;
-
+#if !KK
+				GUI.backgroundColor = Color.grey;
+#endif
 				GUI.Box(new Rect(0, 0, _windowSize.x, _windowSize.y), _windowBGtex);
 				GUI.Box(new Rect(0, 0, _windowSize.x, 23), $"S.M.A.P - Slot{_curSlot + 1:00}", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter });
 

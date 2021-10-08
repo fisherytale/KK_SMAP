@@ -3,9 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_SMAP", "src\KK_SMAP.csproj", "{35471FE3-0A99-400E-80D2-E644A73C77E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMAP.KK", "src\SMAP.KK\SMAP.KK.csproj", "{35471FE3-0A99-400E-80D2-E644A73C77E8}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SMAP.Core", "src\SMAP.Core\SMAP.Core.shproj", "{C29FACFB-84C6-4947-9045-9D7ECFFEDEA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMAP.KKS", "src\SMAP.KKS\SMAP.KKS.csproj", "{8320F176-9B5F-4D60-BB37-311BBD0168E6}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		src\SMAP.Core\SMAP.Core.projitems*{35471fe3-0a99-400e-80d2-e644a73c77e8}*SharedItemsImports = 4
+		src\SMAP.Core\SMAP.Core.projitems*{8320f176-9b5f-4d60-bb37-311bbd0168e6}*SharedItemsImports = 4
+		src\SMAP.Core\SMAP.Core.projitems*{c29facfb-84c6-4947-9045-9d7ecffedea7}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -15,6 +24,9 @@ Global
 		{35471FE3-0A99-400E-80D2-E644A73C77E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35471FE3-0A99-400E-80D2-E644A73C77E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35471FE3-0A99-400E-80D2-E644A73C77E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8320F176-9B5F-4D60-BB37-311BBD0168E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8320F176-9B5F-4D60-BB37-311BBD0168E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8320F176-9B5F-4D60-BB37-311BBD0168E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

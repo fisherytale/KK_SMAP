@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +93,7 @@ namespace SMAP
 
 			[HarmonyPostfix]
 			[HarmonyPatch(typeof(ChaAccessoryDefine), nameof(ChaAccessoryDefine.GetReverseParent), new[] { typeof(string) })]
-			private static void GetReverseParentPrefix(string key, ref string __result)
+			private static void ChaAccessoryDefine_GetReverseParent_Postfix(string key, ref string __result)
 			{
 				if (__result == string.Empty)
 					__result = FindReverseBone(key);
@@ -101,13 +101,13 @@ namespace SMAP
 
 			[HarmonyPostfix]
 			[HarmonyPatch(typeof(ChaAccessoryDefine), nameof(ChaAccessoryDefine.GetReverseParent), new[] { typeof(ChaAccessoryDefine.AccessoryParentKey) })]
-			private static void GetReverseParentPrefix(ChaAccessoryDefine.AccessoryParentKey key, ref ChaAccessoryDefine.AccessoryParentKey __result)
+			private static void ChaAccessoryDefine_GetReverseParent_Postfix(ChaAccessoryDefine.AccessoryParentKey key, ref ChaAccessoryDefine.AccessoryParentKey __result)
 			{
 				if (__result == ChaAccessoryDefine.AccessoryParentKey.none)
 				{
 					try
 					{
-						__result = (ChaAccessoryDefine.AccessoryParentKey)Enum.Parse(EnumAccesoryParentKeyType, FindReverseBone(key.ToString()));
+						__result = (ChaAccessoryDefine.AccessoryParentKey) Enum.Parse(EnumAccesoryParentKeyType, FindReverseBone(key.ToString()));
 					}
 					catch (Exception e)
 					{
@@ -120,8 +120,8 @@ namespace SMAP
 			/// Used to add new items to game enums
 			/// </summary>
 			[HarmonyPostfix]
-			[HarmonyPatch(typeof(Enum), nameof(Enum.GetValues))]
-			private static void GetValuesHook(Type enumType, ref Array __result)
+			[HarmonyPatch(typeof(Enum), nameof(Enum.GetValues), new[] { typeof(Type) })]
+			private static void Enum_GetValues_Postfix(Type enumType, ref Array __result)
 			{
 				if (enumType == EnumAccesoryParentKeyType)
 				{
@@ -144,8 +144,8 @@ namespace SMAP
 			}
 
 			[HarmonyPostfix]
-			[HarmonyPatch(typeof(Enum), nameof(Enum.GetNames))]
-			private static void GetNamesHook(Type enumType, ref string[] __result)
+			[HarmonyPatch(typeof(Enum), nameof(Enum.GetNames), new[] { typeof(Type) })]
+			private static void Enum_GetNames_Postfix(Type enumType, ref string[] __result)
 			{
 				if (enumType == EnumAccesoryParentKeyType || enumType == EnumRefObjKeyType)
 				{
@@ -156,8 +156,8 @@ namespace SMAP
 			}
 
 			[HarmonyPostfix]
-			[HarmonyPatch(typeof(Enum), nameof(Enum.GetName))]
-			private static void GetNameHook(Type enumType, object value, ref string __result)
+			[HarmonyPatch(typeof(Enum), nameof(Enum.GetName), new[] { typeof(Type), typeof(object) })]
+			private static void Enum_GetName_Postfix(Type enumType, object value, ref string __result)
 			{
 				if (__result != null) return;
 
@@ -177,7 +177,7 @@ namespace SMAP
 
 			[HarmonyPrefix]
 			[HarmonyPatch(typeof(Enum), nameof(Enum.Parse), new[] { typeof(Type), typeof(string), typeof(bool) })]
-			private static bool ParseHook(Type enumType, string value, ref object __result)
+			private static bool Enum_Parse_Prefix(Type enumType, string value, ref object __result)
 			{
 				if (enumType == EnumAccesoryParentKeyType)
 				{
@@ -201,8 +201,8 @@ namespace SMAP
 			}
 
 			[HarmonyPostfix]
-			[HarmonyPatch(typeof(ChaReference), nameof(ChaReference.CreateReferenceInfo))]
-			private static void CreateReferenceInfoHook(ChaReference __instance, ulong flags, GameObject objRef)
+			[HarmonyPatch(typeof(ChaReference), nameof(ChaReference.CreateReferenceInfo), new[] { typeof(ulong), typeof(GameObject) })]
+			private static void ChaReference_CreateReferenceInfo_Postfix(ChaReference __instance, ulong flags, GameObject objRef)
 			{
 				if (null == objRef || (int)(flags - 1UL) != 0) return;
 
@@ -226,7 +226,7 @@ namespace SMAP
 
 			[HarmonyPostfix]
 			[HarmonyPatch(typeof(ChaReference), nameof(ChaReference.ReleaseRefObject), new[] { typeof(ulong) })]
-			private static void ReleaseRefObjectHook(ulong flags, ref Dictionary<ChaReference.RefObjKey, GameObject> ___dictRefObj)
+			private static void ChaReference_ReleaseRefObject_Postfix(ulong flags, ref Dictionary<ChaReference.RefObjKey, GameObject> ___dictRefObj)
 			{
 				if ((int) (flags - 1UL) != 0)
 					return;
@@ -237,7 +237,7 @@ namespace SMAP
 
 			[HarmonyPrefix]
 			[HarmonyPatch(typeof(CustomAcsParentWindow), nameof(CustomAcsParentWindow.SelectParent), new[] { typeof(string) })]
-			private static bool SelectParentHook(string parentKey, Toggle[] ___tglParent, ref int __result)
+			private static bool CustomAcsParentWindow_SelectParent_Prefix(string parentKey, Toggle[] ___tglParent, ref int __result)
 			{
 				if (_tglSMAP != null && !parentKey.StartsWith("a_n_"))
 					_tglSMAP.isOn = true;
@@ -265,6 +265,64 @@ namespace SMAP
 
 				return false;
 			}
+#if !MoreAcc
+			[HarmonyPrefix]
+			[HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessoryParent), new[] { typeof(int), typeof(string) })]
+			private static bool ChaControl_ChangeAccessoryParent_Prefix(ChaControl __instance, int slotNo, string parentStr, ref bool __result)
+			{
+				if (slotNo >= __instance.objAccessory.Length)
+				{
+					__result = false;
+					return false;
+				}
+
+				GameObject gameObject = __instance.objAccessory[slotNo];
+				if (gameObject == null)
+				{
+					__result = false;
+					return false;
+				}
+				if (parentStr == "none")
+				{
+					gameObject.transform.SetParent(null, worldPositionStays: false);
+					__result = true;
+					return false;
+				}
+				ListInfoBase listInfoBase = __instance.infoAccessory[slotNo];
+				if (listInfoBase != null)
+				{
+					listInfoBase = gameObject.GetComponent<ListInfoComponent>().data;
+				}
+				if (listInfoBase.GetInfo(ChaListDefine.KeyType.Parent) == "0")
+				{
+					__result = false;
+					return false;
+				}
+				try
+				{
+					/*
+					ChaReference.RefObjKey key = (ChaReference.RefObjKey) Enum.Parse(typeof(ChaReference.RefObjKey), parentStr);
+					GameObject referenceInfo = __instance.GetReferenceInfo(key);
+					*/
+					GameObject referenceInfo = __instance.GetComponentsInChildren<Transform>(true).FirstOrDefault(x => x.name == parentStr)?.gameObject;
+					if (referenceInfo == null)
+					{
+						__result = false;
+						return false;
+					}
+					gameObject.transform.SetParent(referenceInfo.transform, worldPositionStays: false);
+					__instance.nowCoordinate.accessory.parts[slotNo].parentKey = parentStr;
+					__instance.nowCoordinate.accessory.parts[slotNo].partsOfHead = ChaAccessoryDefine.CheckPartsOfHead(parentStr);
+				}
+				catch (ArgumentException)
+				{
+					__result = false;
+					return false;
+				}
+				__result = true;
+				return false;
+			}
+#endif
 		}
 	}
 }
