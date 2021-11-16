@@ -87,7 +87,7 @@ namespace SMAP
 				}
 				else
 				{
-					Logger.Log(LogLevel.Error, "Invalid ChaAccessoryDefine.AccessoryParentName or Enum.GetValues(typeof(ChaAccessoryDefine.AccessoryParentKey))");
+					_logger.Log(LogLevel.Error, "Invalid ChaAccessoryDefine.AccessoryParentName or Enum.GetValues(typeof(ChaAccessoryDefine.AccessoryParentKey))");
 				}
 			}
 
@@ -111,7 +111,7 @@ namespace SMAP
 					}
 					catch (Exception e)
 					{
-						Logger.Log(LogLevel.Error, e);
+						_logger.Log(LogLevel.Error, e);
 					}
 				}
 			}
@@ -223,21 +223,38 @@ namespace SMAP
 						findAssist.GetObjectFromName(AccessoryParentKey[i]);
 				}
 			}
+			/*
+#if KKS
+			[HarmonyPostfix]
+			[HarmonyPatch(typeof(ChaReference), nameof(ChaReference.CreateReferenceInfo), typeof(ulong), typeof(ChaLoad.ChaPreparationBodyBone.BoneInfo[]))]
+			public static void CreateReferenceInfoHook(ChaReference __instance, ulong flags, ChaLoad.ChaPreparationBodyBone.BoneInfo[] boneInfos)
+			{
+				if (CustomBase.Instance.chaCtrl == null) return;
+				if (null == boneInfos || (int)(flags - 1UL) != 0) return;
 
+				var dict = __instance.dictRefObj;
+
+				for (var i = 0; i < AccessoryParentKey.Count; i++)
+				{
+					dict[(ChaReference.RefObjKey)(RefObjKeyOriginalCount + i)] = boneInfos.First(x => x.name == AccessoryParentKey[i]).gameObject;
+				}
+			}
+#endif
+			*/
 			[HarmonyPostfix]
 			[HarmonyPatch(typeof(ChaReference), nameof(ChaReference.ReleaseRefObject), new[] { typeof(ulong) })]
-			private static void ChaReference_ReleaseRefObject_Postfix(ulong flags, ref Dictionary<ChaReference.RefObjKey, GameObject> ___dictRefObj)
+			private static void ChaReference_ReleaseRefObject_Postfix(ChaReference __instance, ulong flags)
 			{
 				if ((int) (flags - 1UL) != 0)
 					return;
 
 				for (int i = 0; i < AccessoryParentKey.Count; i++)
-					___dictRefObj.Remove((ChaReference.RefObjKey) (RefObjKeyOriginalCount + i));
+					__instance.dictRefObj.Remove((ChaReference.RefObjKey) (RefObjKeyOriginalCount + i));
 			}
 
 			[HarmonyPrefix]
 			[HarmonyPatch(typeof(CustomAcsParentWindow), nameof(CustomAcsParentWindow.SelectParent), new[] { typeof(string) })]
-			private static bool CustomAcsParentWindow_SelectParent_Prefix(string parentKey, Toggle[] ___tglParent, ref int __result)
+			private static bool CustomAcsParentWindow_SelectParent_Prefix(CustomAcsParentWindow __instance, string parentKey, ref int __result)
 			{
 				if (_tglSMAP != null && !parentKey.StartsWith("a_n_"))
 					_tglSMAP.isOn = true;
@@ -248,7 +265,7 @@ namespace SMAP
 				// Fall back to stock logic
 				int num = Array.IndexOf(SelectParentHookCache, parentKey);
 				if (num != -1)
-					___tglParent[num].isOn = true;
+					__instance.tglParent[num].isOn = true;
 
 				__result = num;
 				return false;
@@ -265,7 +282,7 @@ namespace SMAP
 
 				return false;
 			}
-#if !MoreAcc
+
 			[HarmonyPrefix]
 			[HarmonyPatch(typeof(ChaControl), nameof(ChaControl.ChangeAccessoryParent), new[] { typeof(int), typeof(string) })]
 			private static bool ChaControl_ChangeAccessoryParent_Prefix(ChaControl __instance, int slotNo, string parentStr, ref bool __result)
@@ -322,7 +339,6 @@ namespace SMAP
 				__result = true;
 				return false;
 			}
-#endif
 		}
 	}
 }

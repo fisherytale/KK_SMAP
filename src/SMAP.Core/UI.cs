@@ -78,9 +78,9 @@ namespace SMAP
 				_tglSMAP = _copy.GetComponent<Toggle>();
 				_tglSMAP.onValueChanged.RemoveAllListeners();
 #if KK
-				_windowBGtex = MakeTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.5f, 0.5f, 0.5f, 1f));
+				_windowBGtex = JetPack.UI.MakePlainTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.5f, 0.5f, 0.5f, 1f));
 #else
-				_windowBGtex = MakeTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.2f, 0.2f, 0.2f, 1f));
+				_windowBGtex = JetPack.UI.MakePlainTex((int) _windowSize.x, (int) _windowSize.y, new Color(0.2f, 0.2f, 0.2f, 1f));
 #endif
 				_chaCtrl = CustomBase.Instance.chaCtrl;
 				_windowRectID = GUIUtility.GetControlID(FocusType.Passive);
@@ -108,14 +108,12 @@ namespace SMAP
 
 			private static bool _display()
 			{
-				if (CustomBase.Instance.customCtrl.hideFrontUI)
-					return false;
-#if KK
-				if (!Manager.Scene.Instance.AddSceneName.IsNullOrEmpty() && Manager.Scene.Instance.AddSceneName != "CustomScene")
-					return false;
-#endif
+				if (CustomBase.Instance.customCtrl.hideFrontUI) return false;
+				if (JetPack.Toolbox.SceneIsOverlap()) return false;
+				if (!JetPack.Toolbox.SceneAddSceneName().IsNullOrEmpty() && JetPack.Toolbox.SceneAddSceneName() != "CustomScene") return false;
 				if (_cgAccessoryTop != null && _cgAcsParentWindow != null)
 					return (_cgAccessoryTop.alpha > 0 && _cgAcsParentWindow.alpha > 0);
+
 				return false;
 			}
 
@@ -163,7 +161,7 @@ namespace SMAP
 				if (EventType.MouseDown == _windowEvent.type || EventType.MouseUp == _windowEvent.type || EventType.MouseDrag == _windowEvent.type || EventType.MouseMove == _windowEvent.type)
 					_hasFocus = false;
 
-				if (_hasFocus && GetResizedRect(_windowRect).Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
+				if (_hasFocus && JetPack.UI.GetResizedRect(_windowRect).Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
 					Input.ResetInputAxes();
 			}
 
@@ -286,29 +284,6 @@ namespace SMAP
 					GUILayout.EndVertical();
 				}
 				GUILayout.EndHorizontal();
-			}
-
-			// https://bensilvis.com/unity3d-auto-scale-gui/
-			private Rect GetResizedRect(Rect _rect)
-			{
-				Vector2 _position = GUI.matrix.MultiplyVector(new Vector2(_rect.x, _rect.y));
-				Vector2 _size = GUI.matrix.MultiplyVector(new Vector2(_rect.width, _rect.height));
-
-				return new Rect(_position.x, _position.y, _size.x, _size.y);
-			}
-
-			private Texture2D MakeTex(int _width, int _height, Color _color)
-			{
-				Color[] pix = new Color[_width * _height];
-
-				for (int i = 0; i < pix.Length; i++)
-					pix[i] = _color;
-
-				Texture2D result = new Texture2D(_width, _height);
-				result.SetPixels(pix);
-				result.Apply();
-
-				return result;
 			}
 		}
 	}

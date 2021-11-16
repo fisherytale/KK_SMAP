@@ -17,22 +17,35 @@ namespace SMAP
 	public partial class SMAP : BaseUnityPlugin
 	{
 		public const string GUID = "SMAP";
+#if DEBUG
+		public const string Name = "Stimulate More Accessory Parents (Debug Build)";
+#else
 		public const string Name = "Stimulate More Accessory Parents";
-		public const string Version = "1.3.1.0";
+#endif
+		public const string Version = "1.4.0.0";
 
-		internal static new ManualLogSource Logger;
+		internal static ManualLogSource _logger;
 
 		private void Start()
 		{
-			Logger = base.Logger;
-			BepInEx.Bootstrap.Chainloader.PluginInfos.TryGetValue("com.joan6694.illusionplugins.moreaccessories", out PluginInfo PluginInfo);
-#if KK && !DEBUG
-			if (PluginInfo?.Instance != null && PluginInfo.Metadata.Version.CompareTo(new Version("2.0")) > -1)
+			_logger = base.Logger;
+
+#if KK
+			if (JetPack.MoreAccessories.BuggyBootleg)
 			{
-				Logger.LogError($"Could not load {Name} {Version} because it is incompatible with MoreAccessories experimental build");
+#if DEBUG
+				if (!JetPack.MoreAccessories.Installed)
+				{
+					_logger.LogError($"Backward compatibility in BuggyBootleg MoreAccessories is disabled");
+					return;
+				}
+#else
+				_logger.LogError($"Could not load {Name} {Version} because it is incompatible with MoreAccessories experimental build");
 				return;
+#endif
 			}
 #endif
+
 			Hooks.Initialize();
 
 			MakerAPI.MakerFinishedLoading += (_sender, _args) =>
